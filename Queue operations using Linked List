@@ -1,0 +1,78 @@
+#include <iostream>
+using namespace std;
+
+class Node{
+	public:
+		int data;
+		Node * next;
+		
+		Node()
+		{
+		}
+        Node(int data)
+        {
+        	this->data=data;
+        	next=0;
+		}
+};
+class Queue{
+	
+	public:
+		Node *front, *rare;
+		
+		Queue()
+		{
+			
+		}
+		Queue(int val)
+		{
+			front = rare = new Node(val);
+		}
+		void Enqueue(int data)
+		{
+			if(front==0)
+			{
+					front= new Node(data);
+					rare=front;
+			}
+			else
+			{
+				Node *newNode =  new Node (data);
+				rare->next= newNode;
+				rare = newNode;
+			}
+		}
+		int Dequeue()
+		{
+			int temp= front->data;
+			Node *nextfront= front->next;
+			delete front;
+			front= nextfront;
+			return temp;
+		}
+		int peek()
+		{
+			return front->data;
+		}
+		bool isEmpty()
+		{
+			if(front==0)
+			return true;
+			return false;
+		}
+};
+int main()
+{
+	Queue qu;
+	qu.Enqueue(1);
+	qu.Enqueue(2);
+	qu.Enqueue(3);
+	qu.Enqueue(4);
+	
+	int deletevalue= qu.Dequeue();
+	cout<<"deleted value :"<<deletevalue<<endl;
+	int peek= qu.peek();
+	cout<<"value at peak : "<<peek;
+	
+	return 0;
+}
