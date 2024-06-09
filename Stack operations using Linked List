@@ -1,0 +1,77 @@
+#include <iostream>
+using namespace std;
+
+class Node{
+	public:
+		int data;
+		Node * next;
+		
+		Node()
+		{
+		}
+        Node(int data)
+        {
+        	this->data=data;
+        	next=0;
+		}
+};
+class Stack{
+	
+	public:
+		Node *top;
+		
+		Stack()
+		{
+			
+		}
+		Stack(int val)
+		{
+			top= new Node(val);
+		}
+		void push(int data)
+		{
+			if(top==0)
+			{
+					top= new Node(data);
+			}
+			else
+			{
+				Node *newNode =  new Node (data);
+				newNode->next= top;
+				top = newNode;
+			}
+		}
+		int pop()
+		{
+			int temp= top->data;
+			Node *nexttop= top->next;
+			delete top;
+			top= nexttop;
+			return temp;
+		}
+		int peek()
+		{
+			return top->data;
+		}
+		bool isEmpty()
+		{
+			if(top==0)
+			return true;
+			return false;
+		}
+};
+int main()
+{
+	Stack st;
+	st.push(4);
+	st.push(3);
+	st.push(2);
+	st.push(1);
+	
+	int deletevalue= st.pop();
+	cout<<"deleted value :"<<deletevalue<<endl;
+	int peek= st.peek();
+	cout<<"value at peak : "<<peek;
+	
+	return 0;
+}
