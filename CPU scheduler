@@ -1,0 +1,252 @@
+#include <iostream>
+#include <time.h>
+#include <vector>
+#include <cstdlib>
+using namespace std;
+
+class Node {
+public:
+	int RAM;
+	int priority;
+	int running_time;
+	Node* next;
+
+	Node()
+	{
+		RAM = 0;
+		running_time =0;
+		priority = 0;
+		next = 0;
+	}
+	Node(int RAM, int priority, int running_time)
+	{
+		this->RAM = RAM;
+		this->running_time= running_time;
+		this->priority = priority;
+		next = 0;
+	}
+};
+class Queue {
+
+public:
+	Node* front, * rear;
+
+	Queue()
+	{
+		front = 0;
+		rear = 0;
+	}
+	Queue(int RAM, int prior, int rtime)
+	{
+		front = rear = new Node(RAM, prior, rtime);
+	}
+
+    void Enqueue(int RAM, int prior, int rtime) {
+        if (front == 0) {
+            front = new Node(RAM, prior, rtime);
+            rear = front;
+        }
+//   number have a priority value lesser than other has high priority
+        else {
+            if (front->priority > prior) {
+                Node* newNode = new Node(RAM, prior, rtime);
+                newNode->next = front;
+                front = newNode;
+            }
+            else if (rear->priority <= prior) {
+                Node* newNode = new Node(RAM, prior, rtime);
+                rear->next = newNode;
+                rear = newNode;
+            }
+            else {
+                Node* iterator = front;
+                while (iterator->next != 0 && iterator->next->priority <= prior) {
+                    iterator = iterator->next;
+                }
+                Node* newNode = new Node(RAM, prior, rtime);
+                newNode->next = iterator->next;
+                iterator->next = newNode;
+            }
+        }
+    }
+
+	Node* Dequeue()
+	{
+		if (front == NULL)
+	    {
+          return NULL;      // Return nullptr if the queue is empty
+        }
+		Node* temp = front;
+		Node* nextfront = front->next;
+		delete front;
+		front = nextfront;
+		return temp;
+	}
+	int peek()
+	{
+		return front->RAM;
+	}
+	bool isEmpty()
+	{
+		if (front == 0)
+			return true;
+		return false;
+	}
+};
+void swapNode(Node *a, Node *b)
+{
+	Node *temp= new Node;
+	temp->priority= a->priority;
+	temp->RAM= a->RAM;
+	temp->running_time= a->running_time;
+	
+	a->priority= b->priority;
+	a->RAM= b->RAM;
+	a->running_time= b->running_time;
+	
+	b->priority=temp->priority;
+	b->RAM=temp->RAM;
+	b->running_time= temp->running_time;
+	
+	Node *tempNext = a->next;
+    a->next = b->next;
+    b->next = tempNext;
+}
+class CPU_Sheduler{
+	
+	public:
+		int AvailableRAM, spawnChance;
+		Queue  running_process;
+		Queue  waiting_process;
+		
+		CPU_Sheduler()
+		{
+			AvailableRAM= 2000;    //1 GB = 1000 MB
+		}
+	
+	    void SpawnProcess()
+		{
+			spawnChance = rand() % 100;
+			if(spawnChance<= 15)
+			{
+				int prior = rand() % 20 + 1;         
+                int ram = rand() % 500 + 1;       
+                int rtime = rand() % 10 + 1;       
+                
+                if(AvailableRAM >= ram)
+                {
+                	running_process.Enqueue(ram, prior, rtime);
+                	AvailableRAM -= ram;
+				}
+				else
+				{
+					waiting_process.Enqueue(ram, prior, rtime);
+				}
+				
+			}
+		}
+		
+		void UpdateState()
+		{
+			Node *iterator= running_process.front;
+		//	Node *frontnext = running_process.front->next;
+			if(running_process.front!=NULL)
+			{
+				
+		    	while(iterator != NULL)
+			   {
+				    iterator->running_time-= 1;
+				 
+				    if(iterator->running_time==0  )
+				    {
+				       Node *temp3=	running_process.Dequeue();
+					   if(iterator== running_process.front)
+					   {
+						AvailableRAM += iterator->RAM;
+						
+				    	}
+					   else
+					   {
+						swapNode(iterator, running_process.front);
+						Node *a=running_process.Dequeue();
+				     	}
+			    	}
+			    	iterator= iterator->next;
+		    	}
+			}
+			
+			iterator= waiting_process.front;
+			if(waiting_process.front!= NULL)
+			{
+			  while(iterator != NULL  )
+			  {
+			    Node *lowprior = running_process.front;
+			    while(lowprior != NULL)
+			    {
+			    	if(lowprior->priority> iterator->priority)
+			    	{
+			    		swapNode(lowprior,running_process.front );
+			    		Node *temp2 = running_process.Dequeue();
+			    		AvailableRAM += temp2->RAM;
+			    		if(AvailableRAM >= iterator->RAM)
+			    		{
+			    			waiting_process.Enqueue(temp2->RAM, temp2->priority, temp2->running_time);
+			    		    running_process.Enqueue(iterator->RAM, iterator->priority, iterator->running_time);
+			    		    AvailableRAM -= iterator->RAM;
+			    		    continue;
+						}
+					}
+					lowprior= lowprior->next;
+				}
+				
+				if(AvailableRAM >= iterator->RAM)
+				{
+					AvailableRAM-= iterator->RAM;
+					Node *temp= waiting_process.Dequeue();
+					running_process.Enqueue(temp->RAM, temp->priority, temp->running_time);
+				}
+				
+				iterator= iterator->next;
+			  }
+			}
+		}
+		
+		void Display()
+		{
+			
+			cout<<"Process : \n";
+			cout<<"RAM\t"<<"Priority\t"<<"Running time\t"<<"Status\n";
+			Node *i = running_process.front;
+            while(i!=NULL)
+            {
+            	cout<<i->RAM<<"\t"<<i->priority<<"\t\t"<<i->running_time<<"\t\t"<<"Running state\n";
+            	i= i->next;
+            
+			}
+			i= waiting_process.front;
+			while(i!=NULL)
+            {
+            	cout<<i->RAM<<"\t"<<i->priority<<"\t\t"<<i->running_time<<"\t\t"<<"Waiting state\n";
+            	i= i->next;
+            
+			}
+      			
+		}
+};
+int main()
+{
+	srand(static_cast<unsigned>(time(0)));      // Seed the random number generator
+	CPU_Sheduler CS;
+	for(int i=1;i<=100; i++)
+	{
+		
+		CS.SpawnProcess();
+		CS.UpdateState();
+		cout<<"Time : "<<i<<"\n";
+		cout<<"Available RAM : "<<CS.AvailableRAM<<"\n";
+		CS.Display();
+		cout<<"------------------------------------------------------\n\n";
+	}
+
+	return 0;
+}
