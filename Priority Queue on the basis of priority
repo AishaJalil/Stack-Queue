@@ -1,0 +1,99 @@
+#include <iostream>
+using namespace std;
+
+class Node {
+public:
+	int data;
+	int priority;
+	Node* next;
+
+	Node()
+	{
+		data = 0;
+		priority = 0;
+		next = 0;
+	}
+	Node(int data, int priority)
+	{
+		this->data = data;
+		this->priority = priority;
+		next = 0;
+	}
+};
+class Queue {
+
+public:
+	Node* front, * rear;
+
+	Queue()
+	{
+		front = 0;
+		rear = 0;
+	}
+	Queue(int val, int prior)
+	{
+		front = rear = new Node(val, prior);
+	}
+
+    void Enqueue(int data, int prior) {
+        if (front == 0) {
+            front = new Node(data, prior);
+            rear = front;
+        }
+        else {
+            if (front->priority > prior) {
+                Node* newNode = new Node(data, prior);
+                newNode->next = front;
+                front = newNode;
+            }
+            else if (rear->priority <= prior) {
+                Node* newNode = new Node(data, prior);
+                rear->next = newNode;
+                rear = newNode;
+            }
+            else {
+                Node* iterator = front;
+                while (iterator->next != 0 && iterator->next->priority <= prior) {
+                    iterator = iterator->next;
+                }
+                Node* newNode = new Node(data, prior);
+                newNode->next = iterator->next;
+                iterator->next = newNode;
+            }
+        }
+    }
+
+	int Dequeue()
+	{
+		int temp = front->data;
+		Node* nextfront = front->next;
+		delete front;
+		front = nextfront;
+		return temp;
+	}
+	int peek()
+	{
+		return front->data;
+	}
+	bool isEmpty()
+	{
+		if (front == 0)
+			return true;
+		return false;
+	}
+};
+int main()
+{
+	Queue qu;
+	qu.Enqueue(1, 3);
+	qu.Enqueue(2, 4);
+	qu.Enqueue(3, 2);
+	qu.Enqueue(4, 1);
+
+	int deletevalue = qu.Dequeue();
+	cout << "deleted value :" << deletevalue << endl;
+	int peek = qu.peek();
+	cout << "value at peak : " << peek;
+
+	return 0;
+}
